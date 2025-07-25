@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../models/location_result.dart';
+import 'package:frontend/models/location_result.dart';
 
 class LocationService {
   static const Duration _locationTimeout = Duration(seconds: 10);

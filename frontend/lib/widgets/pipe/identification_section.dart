@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/culvert_data.dart';
-import '../../controllers/identification_controller.dart';
-import '../form_widgets/modern_text_field.dart';
-import '../form_widgets/auto_button.dart';
-import '../common/pipe_section_wrapper.dart';
+import 'package:frontend/models/culvert_data.dart';
+import 'package:frontend/controllers/identification_controller.dart';
+import 'package:frontend/widgets/form_widgets/modern_text_field.dart';
+import 'package:frontend/widgets/form_widgets/auto_button.dart';
+import 'package:frontend/widgets/common/pipe_section_wrapper.dart';
 
 class IdentificationSection extends StatefulWidget {
   final CulvertData data;

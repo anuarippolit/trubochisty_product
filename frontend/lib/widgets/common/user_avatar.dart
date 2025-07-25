@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
+import 'package:frontend/models/user.dart';
 
 class UserAvatar extends StatelessWidget {
   final User user;
@@ -14,7 +14,8 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+    final avatarUrl = user.avatarUrl;
+
     return Container(
       width: size,
       height: size,
@@ -36,38 +37,40 @@ class UserAvatar extends StatelessWidget {
           ),
         ],
       ),
-      child: user.avatarUrl != null
+      child: (avatarUrl != null && avatarUrl.isNotEmpty)
           ? ClipRRect(
               borderRadius: BorderRadius.circular(size / 2),
               child: Image.network(
-                user.avatarUrl!,
+                avatarUrl,
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildInitialsAvatar(),
+                errorBuilder: (context, error, stackTrace) => _buildInitialsAvatar(context),
               ),
             )
-          : _buildInitialsAvatar(),
+          : _buildInitialsAvatar(context),
     );
   }
 
-  Widget _buildInitialsAvatar() {
-    return Builder(
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-        
-        return Center(
-          child: Text(
-            user.initials,
-            style: TextStyle(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: size * 0.35,
-            ),
-          ),
-        );
-      },
+  Widget _buildInitialsAvatar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final initials = _getInitials(user.username);
+
+    return Center(
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: size * 0.35,
+        ),
+      ),
     );
   }
-} 
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return parts.take(2).map((e) => e.substring(0, 1).toUpperCase()).join();
+  }
+}

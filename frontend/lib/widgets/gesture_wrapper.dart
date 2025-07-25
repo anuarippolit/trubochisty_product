@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
-import '../services/shortcuts_service.dart';
+import 'package:frontend/providers/theme_provider.dart';
+import 'package:frontend/services/shortcuts_service.dart';
 
 class GestureWrapper extends StatefulWidget {
   final Widget child;

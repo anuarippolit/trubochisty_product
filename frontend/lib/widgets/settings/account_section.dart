@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../common/settings_section_wrapper.dart';
-import '../common/user_avatar.dart';
-import '../common/danger_button.dart';
+import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/widgets/common/settings_section_wrapper.dart';
+import 'package:frontend/widgets/common/user_avatar.dart';
+import 'package:frontend/widgets/common/danger_button.dart';
 
 class AccountSection extends StatelessWidget {
   const AccountSection({super.key});
@@ -68,7 +68,7 @@ class AccountSection extends StatelessWidget {
               title: 'Выйти из аккаунта',
               icon: Icons.logout_rounded,
               onTap: () async {
-                await authProvider.signOut();
+                await authProvider.logout();
                 if (context.mounted) Navigator.of(context).pop();
               },
             ),

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../models/location_result.dart';
+import 'package:frontend/models/location_result.dart';
 
 class PhotoService {
   /// Checks if the current platform supports camera/photo operations

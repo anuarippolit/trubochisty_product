@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../services/shortcuts_service.dart';
-import '../common/settings_section_wrapper.dart';
+import 'package:frontend/services/shortcuts_service.dart';
+import 'package:frontend/widgets/common/settings_section_wrapper.dart';
 
 class ShortcutsSection extends StatefulWidget {
   const ShortcutsSection({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/culvert_data.dart';
-import '../../providers/culvert_provider.dart';
+import 'package:frontend/models/culvert_data.dart';
+import 'package:frontend/providers/culvert_provider.dart';
 
 class ActionButtons extends StatelessWidget {
   final CulvertData data;

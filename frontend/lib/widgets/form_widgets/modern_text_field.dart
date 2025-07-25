@@ -8,6 +8,8 @@ class ModernTextField extends StatelessWidget {
   final Widget? suffixWidget;
   final TextInputType? keyboardType;
   final VoidCallback? onSuffixPressed;
+  final String? Function(String?)? validator;
+  final bool obscureText;
 
   const ModernTextField({
     super.key,
@@ -18,17 +20,21 @@ class ModernTextField extends StatelessWidget {
     this.suffixWidget,
     this.keyboardType,
     this.onSuffixPressed,
+    this.validator,
+    this.obscureText = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: validator,
         style: TextStyle(color: colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: label,
@@ -55,4 +61,4 @@ class ModernTextField extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/theme_provider.dart';
-import '../common/settings_section_wrapper.dart';
+import 'package:frontend/providers/theme_provider.dart';
+import 'package:frontend/widgets/common/settings_section_wrapper.dart';
 
 class ThemeSection extends StatelessWidget {
   const ThemeSection({super.key});

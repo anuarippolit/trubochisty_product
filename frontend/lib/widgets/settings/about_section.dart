@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../common/settings_section_wrapper.dart';
+import 'package:frontend/widgets/common/settings_section_wrapper.dart';
 
 class AboutSection extends StatelessWidget {
   const AboutSection({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/user.dart';
-import '../providers/auth_provider.dart';
+import 'package:frontend/models/user.dart';
+import 'package:frontend/providers/auth_provider.dart';
 import 'settings/settings_screen.dart';
 
 class UserProfileHeader extends StatelessWidget {
@@ -71,26 +71,28 @@ class UserProfileHeader extends StatelessWidget {
           ),
         ],
       ),
-      child: user.avatarUrl != null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                user.avatarUrl!,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildInitialsAvatar(user, colorScheme),
-              ),
-            )
-          : _buildInitialsAvatar(user, colorScheme),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.network(
+          user.avatarUrl ?? '',
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildInitialsAvatar(user, colorScheme),
+        ),
+      ),
     );
   }
 
   Widget _buildInitialsAvatar(User user, ColorScheme colorScheme) {
+    final initials = user.username.isNotEmpty
+        ? user.username.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase()
+        : '?';
+
     return Center(
       child: Text(
-        user.initials,
+        initials,
         style: TextStyle(
           color: colorScheme.onPrimary,
           fontWeight: FontWeight.bold,
@@ -106,7 +108,7 @@ class UserProfileHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          user.name,
+          user.username,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
             color: colorScheme.onSurface,
@@ -166,7 +168,7 @@ class UserProfileHeader extends StatelessWidget {
   void _showSettings(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isMobile = screenSize.width < 768;
-    
+
     if (isMobile) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -182,28 +184,37 @@ class UserProfileHeader extends StatelessWidget {
   }
 
   Color _getRoleColor(String role) {
-    switch (role) {
-      case 'admin':
-        return Colors.red;
-      case 'engineer':
-        return Colors.blue;
-      case 'viewer':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+  switch (role.toUpperCase()) {
+    case 'ROLE_ADMIN':
+      return Colors.red;
+    case 'ROLE_ENGINEER':
+      return Colors.blue;
+    case 'ROLE_USER':
+      return Colors.orange;
+    case 'ROLE_SUPERVISER':
+      return Colors.purple;
+    case 'ROLE_VIEWER':
+      return Colors.green;
+    default:
+      return Colors.grey;
   }
+}
 
-  String _getRoleDisplayName(String role) {
-    switch (role) {
-      case 'admin':
-        return 'Админ';
-      case 'engineer':
-        return 'Инженер';
-      case 'viewer':
-        return 'Просмотр';
-      default:
-        return role;
-    }
+String _getRoleDisplayName(String role) {
+  switch (role.toUpperCase()) {
+    case 'ROLE_ADMIN':
+      return 'Админ';
+    case 'ROLE_ENGINEER':
+      return 'Инженер';
+    case 'ROLE_USER':
+      return 'Пользователь';
+    case 'ROLE_SUPERVISER':
+      return 'Супервайзер';
+    case 'ROLE_VIEWER':
+      return 'Просмотр';
+    default:
+      return role;
   }
-} 
+}
+
+}

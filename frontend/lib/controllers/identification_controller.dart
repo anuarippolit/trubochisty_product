@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/location_service.dart';
-import '../models/location_result.dart';
+import 'package:frontend/services/location_service.dart';
+import 'package:frontend/models/location_result.dart';
 
 /// Controller for handling identification section business logic
 /// Separates business logic from UI components following clean architecture
