@@ -40,10 +40,29 @@ class CulvertProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void createNewCulvertWithSave(BuildContext context, User user) {
-    _selected = CulvertData.empty(user);
-    _showCulvertForm(context, user, _selected!, isEditing: false);
+  void createNewCulvertWithSave(
+  BuildContext context,
+  User user, {
+  CulvertData? initialData,
+  double? latitude,
+  double? longitude,
+}) {
+  _selected = initialData ?? CulvertData.empty(user);
+
+  if (latitude != null && longitude != null) {
+    _selected = CulvertData(
+      id: _selected!.id,
+      address: _selected!.address,
+      coordinates: '$latitude,$longitude',
+      defects: _selected!.defects,
+      photos: _selected!.photos,
+      users: _selected!.users,
+    );
   }
+
+  _showCulvertForm(context, user, _selected!, isEditing: false);
+}
+
 
   void editCulvert(BuildContext context, User user, CulvertData culvert) {
     _selected = culvert;
@@ -63,7 +82,7 @@ class CulvertProvider with ChangeNotifier {
             if (isEditing) {
               await CulvertService().updateCulvert(updatedData.id, updatedData, user);
             } else {
-              await CulvertService().createCulvert(updatedData, [], user);
+              await CulvertService().createCulvert(updatedData, user); // hereeee
             }
             await fetchCulverts(user);
             Navigator.of(context).pop();

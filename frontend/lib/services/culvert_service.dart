@@ -4,76 +4,75 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/models/culvert_data.dart';
 import 'package:frontend/models/user.dart';
 
+
 class CulvertService {
+  /// Base URL for the CulvertController
   final String baseUrl = 'http://localhost:8080/culvert';
 
-  // Получить все трубы
+  /// Common headers for JSON requests
+  Map<String, String> _headers(String? token) => {
+        if (token != null) 'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+  /// Common headers for multipart requests (do not set content-type manually)
+  Map<String, String> _multipartHeaders(String? token) => {
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+  /// Fetch all culverts (GET /culvert)
   Future<List<CulvertData>> getAllCulverts(User user) async {
-    final response = await http.get(
-      Uri.parse(baseUrl),
-      headers: _headers(user.token),
-    );
+    final uri = Uri.parse(baseUrl);
+    final response = await http.get(uri, headers: _headers(user.token));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => CulvertData.fromJson(e)).toList();
     } else {
-      throw Exception('Ошибка при получении труб');
+      throw Exception('Ошибка при получении труб (${response.statusCode})');
     }
   }
 
-  // Получить одну трубу по ID
+  /// Fetch a single culvert by ID (GET /culvert/culverts/{id})
   Future<CulvertData> getCulvertById(String id, User user) async {
-    final url = Uri.parse('$baseUrl/culverts/$id');
-    final response = await http.get(url, headers: _headers(user.token));
+    final uri = Uri.parse('$baseUrl/culverts/$id');
+    final response = await http.get(uri, headers: _headers(user.token));
 
     if (response.statusCode == 200) {
       return CulvertData.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Ошибка при получении трубы');
+      throw Exception('Ошибка при получении трубы (${response.statusCode})');
     }
   }
 
-  // Создать новую трубу
-  Future<CulvertData> createCulvert(
-    CulvertData culvert,
-    List<File> photos,
-    User user,
-  ) async {
+  /// Create a new culvert (JSON POST to /culvert)
+  Future<CulvertData> createCulvert(CulvertData culvert, User user) async {
     final uri = Uri.parse(baseUrl);
-    final request = http.MultipartRequest('POST', uri)
-      ..headers.addAll(_headers(user.token, isMultipart: true))
-      ..fields['culvert'] = jsonEncode(culvert.toJson());
+    final response = await http.post(
+      uri,
+      headers: _headers(user.token),
+      body: jsonEncode(culvert.toJson()),
+    );
 
-    for (final photo in photos) {
-      final stream = http.ByteStream(photo.openRead());
-      final length = await photo.length();
-      final filename = photo.path.split(Platform.pathSeparator).last;
-
-      request.files.add(
-        http.MultipartFile('photos', stream, length, filename: filename),
+    if (response.statusCode == 201) {
+      return CulvertData.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(
+        'Ошибка при создании трубы (${response.statusCode}): ${response.body}',
       );
     }
-
-    final response = await request.send();
-
-    if (response.statusCode == 200) {
-      final body = await http.Response.fromStream(response);
-      return CulvertData.fromJson(jsonDecode(body.body));
-    } else {
-      throw Exception('Ошибка при создании трубы');
-    }
   }
 
-  // Обновить трубу
+  /// Update an existing culvert (PUT /culvert/{id})
   Future<CulvertData> updateCulvert(
     String id,
     CulvertData culvert,
     User user,
   ) async {
-    final url = Uri.parse('$baseUrl/$id');
+    final uri = Uri.parse('$baseUrl/$id');
     final response = await http.put(
-      url,
+      uri,
       headers: _headers(user.token),
       body: jsonEncode(culvert.toJson()),
     );
@@ -81,21 +80,21 @@ class CulvertService {
     if (response.statusCode == 200) {
       return CulvertData.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Ошибка при обновлении трубы');
+      throw Exception('Ошибка при обновлении трубы (${response.statusCode})');
     }
   }
 
-  // Удалить трубу
+  /// Delete a culvert (DELETE /culvert/{id})
   Future<void> deleteCulvert(String id, User user) async {
-    final url = Uri.parse('$baseUrl/$id');
-    final response = await http.delete(url, headers: _headers(user.token));
+    final uri = Uri.parse('$baseUrl/$id');
+    final response = await http.delete(uri, headers: _headers(user.token));
 
     if (response.statusCode != 204) {
-      throw Exception('Ошибка при удалении трубы');
+      throw Exception('Ошибка при удалении трубы (${response.statusCode})');
     }
   }
 
-  // Загрузить фото (добавить к существующим)
+  /// Upload photos to a culvert (PUT /culvert/photos/{id})
   Future<List<String>> uploadPhotos(
     String id,
     List<File> photos,
@@ -103,29 +102,28 @@ class CulvertService {
   ) async {
     final uri = Uri.parse('$baseUrl/photos/$id');
     final request = http.MultipartRequest('PUT', uri)
-      ..headers.addAll(_headers(user.token, isMultipart: true));
+      ..headers.addAll(_multipartHeaders(user.token));
 
     for (final file in photos) {
-      final stream = http.ByteStream(file.openRead());
-      final length = await file.length();
-      final filename = file.path.split(Platform.pathSeparator).last;
-
       request.files.add(
-        http.MultipartFile('photos', stream, length, filename: filename),
+        await http.MultipartFile.fromPath(
+          'photos',
+          file.path,
+        ),
       );
     }
 
-    final response = await request.send();
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode == 200) {
-      final body = await http.Response.fromStream(response);
-      return List<String>.from(jsonDecode(body.body));
+      return List<String>.from(jsonDecode(response.body));
     } else {
-      throw Exception('Ошибка при загрузке фотографий');
+      throw Exception('Ошибка при загрузке фотографий (${response.statusCode})');
     }
   }
 
-  // Полностью заменить фото
+  /// Replace all photos for a culvert (PUT /culvert/photos/replace/{id})
   Future<List<String>> replacePhotos(
     String id,
     List<File> photos,
@@ -133,43 +131,38 @@ class CulvertService {
   ) async {
     final uri = Uri.parse('$baseUrl/photos/replace/$id');
     final request = http.MultipartRequest('PUT', uri)
-      ..headers.addAll(_headers(user.token, isMultipart: true));
+      ..headers.addAll(_multipartHeaders(user.token));
 
     for (final file in photos) {
-      final stream = http.ByteStream(file.openRead());
-      final length = await file.length();
-      final filename = file.path.split(Platform.pathSeparator).last;
-
       request.files.add(
-        http.MultipartFile('files', stream, length, filename: filename),
+        await http.MultipartFile.fromPath(
+          'files',
+          file.path,
+        ),
       );
     }
 
-    final response = await request.send();
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode == 200) {
-      final body = await http.Response.fromStream(response);
-      return List<String>.from(jsonDecode(body.body));
+      return List<String>.from(jsonDecode(response.body));
     } else {
-      throw Exception('Ошибка при замене фотографий');
+      throw Exception('Ошибка при замене фотографий (${response.statusCode})');
     }
   }
 
-  // Удалить одно фото
-  Future<void> deletePhoto(String culvertId, String photoUrl, User user) async {
-    final url = Uri.parse('$baseUrl/photos/$culvertId?url=$photoUrl');
-    final response = await http.delete(url, headers: _headers(user.token));
+  /// Delete a single photo from a culvert (DELETE /culvert/photos/{id}?url=...)
+  Future<void> deletePhoto(
+    String culvertId,
+    String photoUrl,
+    User user,
+  ) async {
+    final uri = Uri.parse('$baseUrl/photos/$culvertId?url=$photoUrl');
+    final response = await http.delete(uri, headers: _headers(user.token));
 
     if (response.statusCode != 200) {
-      throw Exception('Ошибка при удалении фотографии');
+      throw Exception('Ошибка при удалении фотографии (${response.statusCode})');
     }
-  }
-
-  // Заголовки
-  Map<String, String> _headers(String? token, {bool isMultipart = false}) {
-    return {
-      if (token != null) 'Authorization': 'Bearer $token',
-      if (!isMultipart) 'Content-Type': 'application/json',
-    };
   }
 }

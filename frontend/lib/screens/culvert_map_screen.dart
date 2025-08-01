@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-
 import 'package:frontend/models/culvert_data.dart';
+import 'package:frontend/models/user.dart';
 import 'package:frontend/providers/auth_provider.dart';
 import 'package:frontend/providers/culvert_provider.dart';
 import 'package:frontend/widgets/pipe/pipe_form_card.dart';
@@ -16,49 +16,41 @@ class CulvertMapScreen extends StatefulWidget {
 }
 
 class _CulvertMapScreenState extends State<CulvertMapScreen> {
+  final MapController _mapController = MapController();
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final culvertProvider = Provider.of<CulvertProvider>(context, listen: false);
       if (authProvider.user != null) {
         await culvertProvider.fetchCulverts(authProvider.user!);
       }
+      setState(() => _isLoading = false);
     });
   }
 
   void _onMapTap(LatLng tappedPoint, User user) {
-    final newCulvert = CulvertData(
-      id: '',
-      address: '',
-      coordinates: '${tappedPoint.latitude},${tappedPoint.longitude}',
-      latitude: tappedPoint.latitude,
-      longitude: tappedPoint.longitude,
-      defects: [],
-      photos: [],
-      users: [user],
-    );
+  final culvertProvider = Provider.of<CulvertProvider>(context, listen: false);
 
-    showDialog(
-      context: context,
-      builder: (_) => PipeFormCard(
-        user: user,
-        culvert: newCulvert,
-        onSave: (createdCulvert) async {
-          await Provider.of<CulvertProvider>(context, listen: false).fetchCulverts(user);
-          Navigator.of(context).pop();
-        },
-      ),
-    );
-  }
+  culvertProvider.createNewCulvertWithSave(
+    context,
+    user,
+    latitude: tappedPoint.latitude,
+    longitude: tappedPoint.longitude,
+  );
+}
+
 
   void _onMarkerTap(CulvertData culvert, User user) {
     showDialog(
       context: context,
       builder: (_) => PipeFormCard(
         user: user,
-        culvert: culvert,
+        initialData: culvert,
+        isEditing: true,
         onSave: (updatedCulvert) async {
           await Provider.of<CulvertProvider>(context, listen: false).fetchCulverts(user);
           Navigator.of(context).pop();
@@ -76,14 +68,20 @@ class _CulvertMapScreenState extends State<CulvertMapScreen> {
       return const Scaffold(body: Center(child: Text('Пользователь не найден')));
     }
 
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Карта труб'),
       ),
       body: FlutterMap(
+        mapController: _mapController,
         options: MapOptions(
-          center: LatLng(51.1605, 71.4704),
-          zoom: 11.0,
+          initialCenter: LatLng(51.1605, 71.4704),
+          initialZoom: 11.0,
+          onMapReady: () => _mapController.move(LatLng(51.1605, 71.4704), 11.0),
           onTap: (_, tappedPoint) => _onMapTap(tappedPoint, user),
         ),
         children: [
@@ -92,16 +90,16 @@ class _CulvertMapScreenState extends State<CulvertMapScreen> {
             userAgentPackageName: 'com.example.trubochisty',
           ),
           MarkerLayer(
-            markers: culverts.map((culvert) {
-              final coords = culvert.coordinates.split(',');
-              final lat = double.tryParse(coords.first) ?? 0.0;
-              final lng = coords.length > 1 ? double.tryParse(coords.last) ?? 0.0 : 0.0;
+            markers: culverts.where((c) => c.coordinates != null).map((culvert) {
+              final coords = culvert.coordinates!.split(',');
+              final lat = double.tryParse(coords[0]) ?? 0.0;
+              final lng = double.tryParse(coords[1]) ?? 0.0;
 
               return Marker(
                 point: LatLng(lat, lng),
                 width: 40,
                 height: 40,
-                builder: (ctx) => GestureDetector(
+                child: GestureDetector(
                   onTap: () => _onMarkerTap(culvert, user),
                   child: const Icon(Icons.location_on, color: Colors.red, size: 32),
                 ),
@@ -113,6 +111,7 @@ class _CulvertMapScreenState extends State<CulvertMapScreen> {
     );
   }
 }
+
 
 
 // import 'package:flutter/material.dart';

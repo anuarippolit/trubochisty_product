@@ -6,6 +6,8 @@ import 'package:frontend/providers/auth_provider.dart';
 import 'package:frontend/widgets/pipe_card.dart';
 import 'package:frontend/widgets/culvert_sidebar.dart';
 import 'package:frontend/widgets/settings/settings_screen.dart';
+import 'package:frontend/screens/culvert_map_screen.dart';
+
 
 class CulvertManagementScreen extends StatefulWidget {
   const CulvertManagementScreen({super.key});
@@ -62,9 +64,18 @@ class _CulvertManagementScreenState extends State<CulvertManagementScreen> {
         title: const Text('Управление трубами'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchCulverts,
-          ),
+  icon: const Icon(Icons.map_outlined),
+  tooltip: 'Открыть карту',
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CulvertMapScreen(),
+      ),
+    );
+  },
+),
+
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {

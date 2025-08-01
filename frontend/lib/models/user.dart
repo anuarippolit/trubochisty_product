@@ -2,7 +2,7 @@ class User {
   final String id;
   final String username;
   final String role;
-  final DateTime createdAt;
+  //final DateTime createdAt;
 
   // Optional fields for frontend use
   final String? token;
@@ -13,7 +13,7 @@ class User {
     required this.id,
     required this.username,
     required this.role,
-    required this.createdAt,
+    //required this.createdAt,
     this.token,
     this.avatarUrl,
     this.name,
@@ -24,7 +24,7 @@ class User {
       id: json['id'],
       username: json['username'],
       role: json['role'],
-      createdAt: DateTime.parse(json['createdAt']),
+      //createdAt: DateTime.parse(json['createdAt']),
       token: json['token'], // optional
       avatarUrl: json['avatarUrl'], // optional
       name: json['name'] ?? json['username'], // fallback to username
@@ -36,7 +36,7 @@ class User {
       'id': id,
       'username': username,
       'role': role,
-      'createdAt': createdAt.toIso8601String(),
+      //'createdAt': createdAt.toIso8601String(),
       if (token != null) 'token': token,
       if (avatarUrl != null) 'avatarUrl': avatarUrl,
       if (name != null) 'name': name,

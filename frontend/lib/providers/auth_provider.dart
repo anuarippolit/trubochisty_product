@@ -16,35 +16,42 @@ class AuthProvider with ChangeNotifier {
   String? get username => _user?.name ?? _user?.username;
   String? get email => _user?.username; // If backend supports separate email, adjust this
 
-  Future<void> login(String username, String password) async {
-    _isLoading = true;
-    notifyListeners();
+  Future<bool> login(String username, String password) async {
+  _isLoading = true;
+  notifyListeners();
 
-    try {
-      final resultToken = await AuthService.signIn(username, password);
-      if (resultToken != null) {
-        _token = resultToken;
+  try {
+    final resultToken = await AuthService.signIn(username, password);
+    if (resultToken != null) {
+      _token = resultToken;
 
-        final fetchedUser = await AuthService.getMe();
-        if (fetchedUser != null) {
-          _user = User(
-            id: fetchedUser.id,
-            username: fetchedUser.username,
-            role: fetchedUser.role,
-            createdAt: fetchedUser.createdAt,
-            name: fetchedUser.name,
-            avatarUrl: fetchedUser.avatarUrl,
-            token: resultToken,
-          );
-        }
+      final fetchedUser = await AuthService.getMe();
+      print('Fetched user: $fetchedUser');
+      if (fetchedUser != null) {
+        _user = User(
+          id: fetchedUser.id,
+          username: fetchedUser.username,
+          role: fetchedUser.role,
+          //createdAt: fetchedUser.createdAt,
+          name: fetchedUser.name,
+          avatarUrl: fetchedUser.avatarUrl,
+          token: resultToken,
+        );
+        _isLoading = false;
+        notifyListeners();
+        return true; // ✅ success
       }
-    } catch (e) {
-      print(e);
     }
-
-    _isLoading = false;
-    notifyListeners();
+  } catch (e) {
+    print('Login error: $e');
   }
+
+  _isLoading = false;
+  notifyListeners();
+  return false; // ❌ failure
+}
+
+
 
   Future<void> autoLogin() async {
     final valid = await AuthService.validateToken();
@@ -60,7 +67,7 @@ class AuthProvider with ChangeNotifier {
         id: fetchedUser.id,
         username: fetchedUser.username,
         role: fetchedUser.role,
-        createdAt: fetchedUser.createdAt,
+        //createdAt: fetchedUser.createdAt,
         name: fetchedUser.name,
         avatarUrl: fetchedUser.avatarUrl,
         token: storedToken,
