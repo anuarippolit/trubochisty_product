@@ -34,23 +34,26 @@ public class AuthenticationService {
      * @return токен
      */
     public JwtAuthenticationResponse signIn(SignInRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
-                request.getPassword()
-        ));
-
-        //System.out.println(request.getUsername() + " " + request.getPassword());
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            System.out.println("❌ Authentication failed: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
 
         var user = userService
                 .userDetailsService()
                 .loadUserByUsername(request.getUsername());
 
-        System.out.println(user);
-
-
         var jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
+
 
     /**
      * Валидация при каждом request'е

@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,14 +85,19 @@ public class CulvertController {
      * @param photos - фотографии
      * @return созданный объект с присвоенным ID
      */
-    @PostMapping
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<CulvertDetailDTO> createCulvert(
-            @RequestPart("culvert") @Valid CulvertCreateDTO culvertDTO,
-            @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
-
-        Culvert created = culvertService.createCulvert(culvertDTO, photos);
-        return ResponseEntity.ok(CulvertMapper.mapToCulvertDetailDTO(created));
+            @RequestBody @Valid CulvertCreateDTO culvertDTO
+    ) {
+        Culvert created = culvertService.createCulvert(culvertDTO, null);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(CulvertMapper.mapToCulvertDetailDTO(created));
     }
+
 
     /**
      * Обновить существующий {@link Culvert} по id.

@@ -1,8 +1,8 @@
 package com.trubochisty.truboserver.controller;
 
-import com.trubochisty.truboserver.DTO.JwtAuthenticationResponse;
-import com.trubochisty.truboserver.DTO.SignInRequest;
-import com.trubochisty.truboserver.DTO.SignUpRequest;
+import com.trubochisty.truboserver.DTO.*;
+import com.trubochisty.truboserver.model.*;
+import com.trubochisty.truboserver.service.UserService;
 import com.trubochisty.truboserver.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     @PostMapping("/sign-in")
     public JwtAuthenticationResponse signIn(@Valid @RequestBody SignInRequest request) {
@@ -49,6 +50,15 @@ public class AuthController {
         JwtAuthenticationResponse response = authenticationService.signUp(request, requester);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserSummaryDTO> getCurrentUser() {
+        User user = userService.getCurrentUser();
+        UserSummaryDTO dto = UserMapper.mapToUserSummaryDTO(user);
+        return ResponseEntity.ok(dto);
+    }
+
+
 
 
     /*@PostMapping("/refresh")
